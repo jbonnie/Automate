@@ -1,8 +1,18 @@
 package warmingUp.antifragile.post.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import warmingUp.antifragile.comment.dto.CommentSendDto;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PostReadDto {
     private String modelName;
     private String description;
@@ -20,7 +30,6 @@ public class PostReadDto {
     private Long fun;
     private String contents;
     private Long commentCount;
-
-    private List<CommentDto>
+    private List<CommentSendDto> commentList;
 
 }

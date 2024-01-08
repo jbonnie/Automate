@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+    void deleteAllByWriterId(Long id);
 
     @Query("SELECT new warmingUp.antifragile.post.dto.PostThumbnailDto(p.id, p.title, m.modelName, m.carAge, mem.nickname, p.updatedAt, p.commentCount) " +
             "FROM Post p, Model m, Member mem, Car c " +
