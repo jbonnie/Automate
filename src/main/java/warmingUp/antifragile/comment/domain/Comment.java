@@ -28,4 +28,11 @@ public class Comment {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public Comment(Long id, Long postId, Long writerId, String contents) {
+        this.id = id;
+        this.postId = postId;
+        this.writerId = writerId;
+        this.contents = contents;
+    }
 }
