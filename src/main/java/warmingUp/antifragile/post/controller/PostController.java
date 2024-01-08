@@ -36,19 +36,19 @@ public class PostController {
         //맴버 조회실패, 차가 없는 경우, 성공했을 경우
         return postService.createPost(memberId, postCreateDto);
     }
-//
-//    @DeleteMapping("/reviews/{postId}")
-//    public ReturnOneDto<Post> deletePost(@PathVariable Long postId, HttpServletRequest request){
-//        HttpSession session = request.getSession();
-//        Long memberId = (Long)session.getAttribute("memberID");
-//
-//        //로그인 안되어 있는 경우
-//        if(memberId == null)
-//            return new ReturnOneDto<Post>(null,"로그인을 하세요");
-//
-//        return postService.deletePost(memberId,postId);
-//
-//    }
+
+    @DeleteMapping("/reviews/{postId}")
+    public ReturnOneDto<Post> deletePost(@PathVariable Long postId, HttpServletRequest request){
+        HttpSession session = request.getSession();
+        Long memberId = (Long)session.getAttribute("memberID");
+
+        //로그인 안되어 있는 경우
+        if(memberId == null)
+            return new ReturnOneDto<Post>(null,"로그인을 하세요");
+
+        return postService.deletePost(memberId,postId);
+
+    }
 //
 //    @PatchMapping("/reviews/{postId}")
 //    public ReturnOneDto<Post> modifyPost(@PathVariable Long postId,@RequestBody PostWriteDto postWriteDto, HttpServletRequest request){
