@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import warmingUp.antifragile.post.domain.Post;
 import warmingUp.antifragile.post.dto.PostThumbnailDto;
 import warmingUp.antifragile.post.dto.ReturnManyDto;
+import warmingUp.antifragile.post.dto.ReturnOneDto;
 import warmingUp.antifragile.post.service.PostService;
 
 import java.util.ArrayList;
@@ -15,20 +16,17 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-//    @GetMapping("/reviews")
-//    public ReturnManyDto<PostThumbnailDto> getReviews(){
-////        return postService.getThumbnails();
-////
-//    }
+    @GetMapping("/reviews")
+    public ReturnManyDto<PostThumbnailDto> getReviews(){
+        return postService.getThumbnails();
 
-//    @GetMapping("/reviews/{postId}")
-//    public ReturnOneDto<PostReadDto> getPostById(@PathVariable Long postId){
-//        PostReadDto postDto = postService.getPostDtoById(postId);
-//        if(postDto == null)
-//            return new ReturnOneDto<PostReadDto>(null, "게시물이 존재하지 않습니다");
-//        return new ReturnOneDto<PostReadDto>(postDto, "게시물 반환 성공");
-//    }
-//
+    }
+
+    @GetMapping("/reviews/{postId}")
+    public ReturnOneDto<Post> getPostById(@PathVariable Long postId){
+        return postService.getPostById(postId);
+    }
+
 //    @PostMapping("/reviews")
 //    public ReturnOneDto<Post> createPost(@RequestBody PostWriteDto postWriteDto, HttpServletRequest request){
 //        HttpSession session = request.getSession();
