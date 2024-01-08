@@ -10,6 +10,8 @@ import warmingUp.antifragile.member.dto.MemberDto;
 import warmingUp.antifragile.member.dto.ReturnDto;
 import warmingUp.antifragile.member.dto.SignupDto;
 import warmingUp.antifragile.member.service.MemberService;
+import warmingUp.antifragile.post.dto.PostThumbnailDto;
+import warmingUp.antifragile.post.dto.ReturnManyDto;
 
 @RestController
 public class MemberController {
@@ -108,4 +110,11 @@ public class MemberController {
         return "회원 탈퇴 되었습니다.";
     }
 
+    ////////////////////////////////////////아래서부턴 Test 3에서 생성됨
+
+    @GetMapping("/user/reviews")
+    public ReturnManyDto<PostThumbnailDto>getReviewByMemberId(HttpServletRequest request){
+        HttpSession session = request.getSession();
+
+    }
 }
