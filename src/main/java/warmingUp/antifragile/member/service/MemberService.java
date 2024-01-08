@@ -9,6 +9,8 @@ import warmingUp.antifragile.car.domain.Model;
 import warmingUp.antifragile.car.dto.CarDto;
 import warmingUp.antifragile.car.repository.CarRepository;
 import warmingUp.antifragile.car.repository.ModelRepository;
+import warmingUp.antifragile.comment.domain.Comment;
+import warmingUp.antifragile.comment.dto.CommentSendDto;
 import warmingUp.antifragile.comment.repository.CommentRepository;
 import warmingUp.antifragile.member.domain.Member;
 import warmingUp.antifragile.member.dto.LoginDto;
@@ -16,7 +18,13 @@ import warmingUp.antifragile.member.dto.MemberDto;
 import warmingUp.antifragile.member.dto.ReturnDto;
 import warmingUp.antifragile.member.dto.SignupDto;
 import warmingUp.antifragile.member.repository.MemberRepository;
+import warmingUp.antifragile.post.domain.Post;
+import warmingUp.antifragile.post.dto.PostThumbnailDto;
+import warmingUp.antifragile.post.dto.ReturnManyDto;
 import warmingUp.antifragile.post.repository.PostRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -135,4 +143,60 @@ public class MemberService {
         if(member != null)
             memberRepository.delete(member);
     }
+
+
+    //////////////////////////아래서부턴 test3에서 생성됨
+
+    //유저가 작성한 게시글 목록 컨트롤러에게 전달
+    public ReturnManyDto<PostThumbnailDto> getReviewByMemberId(Long memberId){
+        //유저ID로 Post 인스턴스를 리스트에 저장
+        List<Post> posts = postRepository.findAllByWriterId(memberId);
+        ArrayList<PostThumbnailDto> postThumbnailDtos = new ArrayList<>();
+
+        //순회하며 PostThumbnailDto로 변환 (썸네일 생성중 문제가 생기는 인스턴스는 무시한다)
+        for(Post post : posts){
+            Member member = memberRepository.findById(post.getWriterId()).orElse(null);
+            if(member == null)
+                continue;
+            Car car = carRepository.findById(member.getCarId()).orElse(null);
+            if(car == null)
+                continue;
+            Model model = modelRepository.findById(car.getModelId()).orElse(null);
+            if(model == null)
+                continue;
+            PostThumbnailDto postThumbnailDto = PostThumbnailDto.fromEntities(post, model, member, car);
+            postThumbnailDtos.add(postThumbnailDto);
+        }
+
+        //최신순으로 정렬 후 컨트롤러에 전달
+        postThumbnailDtos.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        return new ReturnManyDto<>(postThumbnailDtos,"조회성공" );
+    }
+
+    // 유저가 작성한 댓글 목록을 컨트롤러에게 전달
+    public ReturnManyDto<CommentSendDto> getCommentByMemberId(Long memberId){
+
+        // 댓글 엔티티에서 postId로 필터링, 필터링 후 for문으로 Dto로 변환
+        List<Comment> comments = commentRepository.findAllByWriterId(memberId);
+        ArrayList<CommentSendDto> commentSendDtos = new ArrayList<>();
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if(member == null)
+            return new ReturnManyDto<>(null,"맴버 조회 실패");
+
+        for(Comment comment: comments){
+
+            Post post = postRepository.findById(comment.getPostId()).orElse(null);
+            if(post == null)// post 조회실패시 해당 댓글은 추가하지 않는다
+                continue;
+
+            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
+            commentSendDtos.add(commentSendDto);
+        }
+
+        //최신순으로 정렬 후 컨트롤러에 전달
+        commentSendDtos.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        return new ReturnManyDto<>(commentSendDtos,"조회성공" );
+    }
+
+
 }

@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import warmingUp.antifragile.car.dto.CarDto;
+import warmingUp.antifragile.comment.dto.CommentSendDto;
 import warmingUp.antifragile.member.dto.LoginDto;
 import warmingUp.antifragile.member.dto.MemberDto;
 import warmingUp.antifragile.member.dto.ReturnDto;
@@ -12,6 +13,7 @@ import warmingUp.antifragile.member.dto.SignupDto;
 import warmingUp.antifragile.member.service.MemberService;
 import warmingUp.antifragile.post.dto.PostThumbnailDto;
 import warmingUp.antifragile.post.dto.ReturnManyDto;
+import warmingUp.antifragile.post.dto.ReturnOneDto;
 
 @RestController
 public class MemberController {
@@ -112,9 +114,32 @@ public class MemberController {
 
     ////////////////////////////////////////아래서부턴 Test 3에서 생성됨
 
+    //유저가 작성한 게시물의 썸네일들을 반환
     @GetMapping("/user/reviews")
     public ReturnManyDto<PostThumbnailDto>getReviewByMemberId(HttpServletRequest request){
-        HttpSession session = request.getSession();
+        //로그인이 안되어 있을 때
+        HttpSession session = request.getSession(false);
+        if(session == null)
+            return new ReturnManyDto<>(null, "로그인을 하세요");
 
+        Long memberId = (Long)session.getAttribute("memberID");
+        if(memberId == null)
+            return new ReturnManyDto<>(null, "로그인을 하세요");
+        //로그인이 되어 있을 때
+        return memberService.getReviewByMemberId(memberId);
+    }
+
+    @GetMapping("/user/comments")
+    public ReturnManyDto<CommentSendDto>getCommentByMemberId(HttpServletRequest request) {
+        //로그인이 안되어 있을 때
+        HttpSession session = request.getSession(false);
+        if (session == null)
+            return new ReturnManyDto<>(null, "로그인을 하세요");
+
+        Long memberId = (Long) session.getAttribute("memberID");
+        if (memberId == null)
+            return new ReturnManyDto<>(null, "로그인을 하세요");
+        //로그인이 되어 있을 때
+        return memberService.getCommentByMemberId(memberId);
     }
 }
