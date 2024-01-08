@@ -1,15 +1,13 @@
-package warmingUp.antifragile.member.domain;
+package warmingUp.antifragile.post.dto;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Member {
-
-
+public class ReturnOneDto <T>{
+    private T data;
+    private String message;
 }
