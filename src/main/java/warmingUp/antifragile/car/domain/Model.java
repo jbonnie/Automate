@@ -53,4 +53,48 @@ public class Model {
     private Long travelCount;       // 누적 주말여행 목적 개수
     @ColumnDefault("0L")
     private Long kidsCount;         // 누적 자녀와 함께 목적 개수
+
+    // 해당 모델의 총 키워드 평균 점수 구하기
+    public double allKeywordAvg() {
+        return (mpgSum.doubleValue() + safeSum.doubleValue()
+                + spaceSum.doubleValue() + designSum.doubleValue()
+                + funSum.doubleValue()) / reviewCount;
+    }
+    // 해당 모델의 키워드별 평균 점수 반환
+    public double keywordAvg(String keyword) {
+        double result = 0.0;
+        switch(keyword) {
+            case "연비":
+                result = mpgSum.doubleValue() / reviewCount;
+                break;
+            case "승차감 및 안전":
+                result = safeSum.doubleValue() / reviewCount;
+                break;
+            case "넓은 공간":
+                result = spaceSum.doubleValue() / reviewCount;
+                break;
+            case "디자인":
+                result = designSum.doubleValue() / reviewCount;
+                break;
+            case "운전 재미":
+                result = funSum.doubleValue() / reviewCount;
+                break;
+            case "출퇴근용":
+                result = workCount.doubleValue() / reviewCount;
+                break;
+            case "장거리 운전":
+                result = longCount.doubleValue() / reviewCount;
+                break;
+            case "드라이브":
+                result = driveCount.doubleValue() / reviewCount;
+                break;
+            case "주말여행":
+                result = travelCount.doubleValue() / reviewCount;
+                break;
+            case "자녀와 함께":
+                result = kidsCount.doubleValue() / reviewCount;
+                break;
+        }
+        return result;
+    }
 }
