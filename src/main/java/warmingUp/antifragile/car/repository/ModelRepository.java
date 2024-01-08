@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface ModelRepository extends JpaRepository<Model, Long> {
     Optional<Model> findByName(String modelName);
     ArrayList<Model> findByPriceBetween(Integer minPrice, Integer maxPrice);
+    ArrayList<Model> findByPeopleGreaterThanEqualAndPriceBetween(Integer people, Integer minPrice, Integer maxPrice);
+    ArrayList<Model> findByPeopleGreaterThanEqual(Integer people);
+    ArrayList<Model> findAll();
 }
