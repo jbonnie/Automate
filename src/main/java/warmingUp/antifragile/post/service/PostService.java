@@ -29,12 +29,9 @@ public class PostService {
             return new ReturnOneDto<Post>(null, "해당 리뷰를 찾을 수 없습니다");
         return new ReturnOneDto<Post>(post, "리뷰 불러오기 성공");
 
-
-
-
-
     }
 
+    public ReturnOneDto<> createPost(memberId, postCreateDto);
 
 
 }
