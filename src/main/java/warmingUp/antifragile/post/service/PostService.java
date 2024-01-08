@@ -208,4 +208,28 @@ public class PostService {
     }
 
 
+    public ReturnManyDto<CommentSendDto> getCommentsByPostId(Long postId){
+        // 댓글 엔티티에서 postId로 필터링, 필터링 후 for문으로 Dto로 변환
+        List<Comment> comments = commentRepository.findAllByPostId(postId);
+        ArrayList<CommentSendDto> commentSendDtos = new ArrayList<>();
+
+        for(Comment comment: comments){
+
+            Post post = postRepository.findById(comment.getPostId()).orElse(null);
+            if(post == null)// post 조회실패시 해당 댓글은 추가하지 않는다
+                continue;
+
+            Member member = memberRepository.findById(comment.getWriterId()).orElse(null);
+            if(member == null)// member 조회실패시 해당 댓글은 추가하지 않는다
+                continue;
+
+            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
+            commentSendDtos.add(commentSendDto);
+        }
+
+        //최신순으로 정렬 후 컨트롤러에 전달
+        commentSendDtos.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        return new ReturnManyDto<>(commentSendDtos,"조회성공" );
+    }
+
 }
