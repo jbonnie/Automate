@@ -30,7 +30,6 @@ public class Post {
     @Column(nullable = false)
     private Long carId;
 
-
     private String title;
 
     private String contents;
