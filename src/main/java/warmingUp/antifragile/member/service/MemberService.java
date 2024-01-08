@@ -9,12 +9,14 @@ import warmingUp.antifragile.car.domain.Model;
 import warmingUp.antifragile.car.dto.CarDto;
 import warmingUp.antifragile.car.repository.CarRepository;
 import warmingUp.antifragile.car.repository.ModelRepository;
+import warmingUp.antifragile.comment.repository.CommentRepository;
 import warmingUp.antifragile.member.domain.Member;
 import warmingUp.antifragile.member.dto.LoginDto;
 import warmingUp.antifragile.member.dto.MemberDto;
 import warmingUp.antifragile.member.dto.ReturnDto;
 import warmingUp.antifragile.member.dto.SignupDto;
 import warmingUp.antifragile.member.repository.MemberRepository;
+import warmingUp.antifragile.post.repository.PostRepository;
 
 @Service
 @Transactional
@@ -22,6 +24,10 @@ public class MemberService {
 
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private CommentRepository commentRepository;
     @Autowired
     private CarRepository carRepository;
     @Autowired
@@ -118,4 +124,15 @@ public class MemberService {
         return carDto;
     }
 
+    // 회원 탈퇴 처리
+    public void deleteMember(Long id) {
+        // 작성한 게시물 전부 삭제
+        postRepository.deleteAllByWriterId(id);
+        // 작성한 댓글 전부 삭제
+        commentRepository.deleteAllByWriterId(id);
+        // 유저 정보 삭제
+        Member member = memberRepository.findById(id).orElse(null);
+        if(member != null)
+            memberRepository.delete(member);
+    }
 }

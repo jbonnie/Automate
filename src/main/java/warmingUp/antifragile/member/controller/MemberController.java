@@ -95,4 +95,17 @@ public class MemberController {
         return memberService.updateCar(id, carDto);
     }
 
+    // 회원 탈퇴 요청 처리
+    @DeleteMapping("/user")
+    public String deleteMember(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        // 현재 로그인 되어있지 않음
+        if(session == null)
+            return "로그인 되어있지 않아요.";
+        Long id = (Long)session.getAttribute("memberID");   // 세션에 보관된 유저의 id 가져오기
+        session.invalidate();
+        memberService.deleteMember(id);
+        return "회원 탈퇴 되었습니다.";
+    }
+
 }

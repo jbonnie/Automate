@@ -29,7 +29,9 @@ public class CarController {
         ArrayList<Model> list = modelRepository.findByPriceBetween(minPrice, maxPrice);
 
         // 만약 키워드 필터링이 적용되지 않았을 경우 -> 총 5개의 우선 고려사항 평균 점수 합산 높은 순 - 리뷰 많은 순 - 모델명 순 정렬
+        if(keyword == null) {
 
+        }
         // 키워드 필터링 적용 -> 키워드 점수 높은 순 - 리뷰 많은 순 - 모델명 순
         return list;
     }
