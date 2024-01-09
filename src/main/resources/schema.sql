@@ -75,7 +75,7 @@ CREATE TABLE Comment (
     writer_id BIGINT NOT NULL,
     contents TEXT NOT NULL,
     created_at TIMESTAMP,
-    updatedA_at TIMESTAMP
+    updated_at TIMESTAMP
 );
 
 

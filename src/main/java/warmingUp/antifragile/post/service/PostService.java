@@ -89,15 +89,15 @@ public class PostService {
             return new ReturnOneDto<>(null,"맴버를 찾지 못했음");
 
         // 댓글 엔티티에서 postId로 필터링, 필터링 후 for문으로 Dto로 변환
-//        List<Comment> comments = commentRepository.findAllByPostId(postId);
-//        List<CommentSendDto> commentSendDtos = new ArrayList<>();
-//        for(Comment comment: comments){
-//            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
-//            commentSendDtos.add(commentSendDto);
-//        }
+        List<Comment> comments = commentRepository.findAllByPostId(postId);
+        List<CommentSendDto> commentSendDtos = new ArrayList<>();
+        for(Comment comment: comments){
+            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
+            commentSendDtos.add(commentSendDto);
+        }
 
         // 리뷰 Dto에 각종 정보와 댓글List를 주입 시킨 후 리턴 -> 현재는 댓글 구현하지 않으므로 null 주입
-        PostReadDto postReadDto = PostReadDto.fromEntity(post, null, model, member, car);
+        PostReadDto postReadDto = PostReadDto.fromEntity(post, commentSendDtos, model, member, car);
         return new ReturnOneDto<>(postReadDto, "리뷰 불러오기 성공");
 
     }
