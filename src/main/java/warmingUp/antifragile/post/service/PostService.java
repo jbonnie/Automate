@@ -40,6 +40,7 @@ public class PostService {
         ArrayList<PostThumbnailDto> list = postList2ThumnailList(posts);
         // 리스트 최신순 정렬
         list.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        System.out.println("okay3");
         return new ReturnManyDto<>(list,"조회성공" );
     }
     
