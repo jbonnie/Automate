@@ -56,10 +56,10 @@ public class MemberController {
 
     // 로그아웃 요청 처리
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
+    public ReturnDto logout(HttpServletRequest request) {
         HttpSession session = request.getSession();
         session.invalidate();
-        return "다음에 또 만나요!";
+        return new ReturnDto(null, "다음에 또 만나요!");
     }
 
     // 유저 정보 반환
@@ -101,15 +101,15 @@ public class MemberController {
 
     // 회원 탈퇴 요청 처리
     @DeleteMapping("/user")
-    public String deleteMember(HttpServletRequest request) {
+    public ReturnDto deleteMember(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         // 현재 로그인 되어있지 않음
         if(session == null)
-            return "로그인 되어있지 않아요.";
+            return new ReturnDto(null, "로그인 되어있지 않아요.");
         Long id = (Long)session.getAttribute("memberID");   // 세션에 보관된 유저의 id 가져오기
         session.invalidate();
         memberService.deleteMember(id);
-        return "회원 탈퇴 되었습니다.";
+        return new ReturnDto(null, "회원 탈퇴 되었습니다.");
     }
 
     ////////////////////////////////////////아래서부턴 Test 3에서 생성됨

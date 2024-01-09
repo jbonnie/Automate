@@ -17,6 +17,7 @@ import warmingUp.antifragile.post.repository.PostRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 @Service
 public class PostService {
@@ -35,8 +36,16 @@ public class PostService {
     public ReturnManyDto<PostThumbnailDto> getThumbnails(){
         //모든 Post 인스턴스를 리스트에 저장 후 순회
         List<Post> posts = postRepository.findAll();
-        ArrayList<PostThumbnailDto> postThumbnailDtos = new ArrayList<>();
-
+        // Post 객체를 PostThumnailDto로 변환 후 리스트 반환
+        ArrayList<PostThumbnailDto> list = postList2ThumnailList(posts);
+        // 리스트 최신순 정렬
+        list.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        return new ReturnManyDto<>(list,"조회성공" );
+    }
+    
+    // Post 객체로 이루어진 리스트를 PostThumnail 객체로 바꾸어 리스트 반환
+    public ArrayList<PostThumbnailDto> postList2ThumnailList(List<Post> posts) {
+        ArrayList<PostThumbnailDto> result = new ArrayList<>();
         //순회하며 PostThumbnailDto로 변환
         for(Post post : posts){
             Member member = memberRepository.findById(post.getWriterId()).orElse(null);
@@ -49,12 +58,9 @@ public class PostService {
             if(model == null)
                 continue;
             PostThumbnailDto postThumbnailDto = PostThumbnailDto.fromEntities(post, model, member, car);
-            postThumbnailDtos.add(postThumbnailDto);
+            result.add(postThumbnailDto);
         }
-
-        //최신순으로 정렬 후 컨트롤러에 전달
-        postThumbnailDtos.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
-        return new ReturnManyDto<>(postThumbnailDtos,"조회성공" );
+        return result;
     }
 
     public ReturnOneDto<PostReadDto> getPostById(Long postId){
@@ -232,4 +238,100 @@ public class PostService {
         return new ReturnManyDto<>(commentSendDtos,"조회성공" );
     }
 
+    // 필터링 후 Post 객체로 목록 가져오기
+    public List<Post> filterPost(String model, String type, String purpose,
+                                 Integer minPrice, Integer maxPrice,
+                                 String keyword) {
+        List<Post> list;
+
+        // 선택한 주요 이용 목적 리스트 만들기
+        ArrayList<String> purposes = new ArrayList<>();
+        if(purpose != null) {
+            StringTokenizer stk = new StringTokenizer(purpose, ",");
+            while(stk.hasMoreTokens()) {
+                purposes.add(stk.nextToken());
+            }
+        }
+        // 선택한 차종 리스트 만들기
+        ArrayList<String> types = new ArrayList<>();
+        if(type != null) {
+            StringTokenizer stk = new StringTokenizer(type, ",");
+            while(stk.hasMoreTokens()) {
+                types.add(stk.nextToken());
+            }
+        }
+
+        // 1. purpose와 검색어가 모두 선택되었다면
+        if(purposes.size() > 0 && keyword != null) {
+            // 선택된 주요 목적, 검색어가 모두 포함된 게시물 리스트 추출
+            list = postRepository.findByPurposeInAndContentsContaining(purposes, keyword);
+        }
+
+        // 2. purpose만 선택되었을 경우
+        else if(purposes.size() > 0 ) {
+            // 선택된 주요 목적이 포함된 게시물 리스트 추출
+            list = postRepository.findByPurposeIn(purposes);
+        }
+        // 3. 검색어만 선택되었을 경우
+        else if(keyword != null) {
+            // 검색어가 내용에 포함된 게시물 리스트 추출
+            list = postRepository.findByContentsContaining(keyword);
+        }
+        // purpose와 검색어가 모두 선택되지 않았을 경우
+        else {
+            // 모든 게시물 리스트 추출
+            list = postRepository.findAll();
+        }
+
+        // Post list 순회하며 선택한 모델, 예산 범위에 해당하는 것들로만 추리기
+        for(Post post : list) {
+            Car car = carRepository.findById(post.getCarId()).orElse(null);
+            if(car == null) {
+                list.remove(post);
+                continue;
+            }
+            Model m = modelRepository.findById(car.getModelId()).orElse(null);
+            if(m == null) {
+                list.remove(post);
+                continue;
+            }
+            String modelName = m.getName();     // 해당 게시물의 차량 모델명
+            Integer modelPrice = m.getPrice();      // 해당 게시물의 차량 가격
+
+            // 선택한 모델명에 해당하지 않을 시 리스트에서 삭제
+            if(model != null && !modelName.equals(model)) {
+                list.remove(post);
+                continue;
+            }
+            // 예산 범위를 선택하지 않았을 경우 패스
+            if(minPrice == null && maxPrice == null)
+                continue;
+            // 최대 예산만 선택했을 경우
+            if(minPrice == null)
+                minPrice = 0;
+            // 최소 예산만 선택했을 경우
+            if(maxPrice == null)
+                maxPrice = Integer.MAX_VALUE;
+            // 선택한 예산 범위 내에 해당하지 않을 시 리스트에서 삭제
+            if(!(minPrice <= modelPrice && modelPrice <= maxPrice)) {
+                list.remove(post);
+            }
+        }
+        return list;
+    }
+
+    // 선택된 정렬 기준으로 정렬하기 (최신순 / 오래된 순 / 댓글 많은 순)
+    // 디폴트: 최신순
+    public ArrayList<PostThumbnailDto> sortPostThumbnailList(ArrayList<PostThumbnailDto> list, String sort) {
+        if(sort == null || sort.equals("최신 순")) {
+            list.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+        }
+        else if(sort.equals("오래된 순")) {
+            list.sort((o1, o2) -> o1.getUpdatedAt().compareTo(o2.getUpdatedAt()));
+        }
+        else {      // 댓글 많은 순
+            list.sort((o1, o2) -> o2.getCommentCount().compareTo(o1.getCommentCount()));
+        }
+        return list;
+    }
 }
