@@ -48,13 +48,13 @@ VALUES
 (9,'eee222','1234','user9'),
 (10,'ddd333','1234','user10');
 
-INSERT INTO Post(writer_id, car_id, title, contents, mgp, safe, space, design, fun, purpose, updated_at)
-VALUES (1, 1, '좋은거 같아요', '편하다 승차감 좋다', 9, 8, 7, 6, 5, '출퇴근용', CURRENT_DATE - ROUND(RAND() * 365)),
-(2, 2, '별로더라', '별로던데요', 5, 6, 7, 8, 9, '주말여행', CURRENT_DATE - ROUND(RAND() * 365)),
-(3, 3, '추천합니다', '드라이브용으로 좋아요', 9, 8, 3, 4, 9, '드라이브', CURRENT_DATE - ROUND(RAND() * 365)),
-(4, 4, '좁아요', '생각보다 좁아요', 4, 4, 0, 1, 3, '장거리 운전', CURRENT_DATE - ROUND(RAND() * 365)),
-(5, 5, '연비가 좋아요', '연비 미쳤다', 9, 9, 1, 1, 1, '주말여행', CURRENT_DATE - ROUND(RAND() * 365)),
-(6, 6, 'ㅁ', 'ㅁ', 8, 1, 8, 1, 8, '주말여행', CURRENT_DATE - ROUND(RAND() * 365)),
-(7, 7, 'ㅁ', 'ㅁ', 1, 2, 4, 5, 6, '장거리 운전', CURRENT_DATE - ROUND(RAND() * 365)),
-(8, 8, 'ㅁ', 'ㅁ', 1, 1, 1, 1, 1, '자녀와 함께', CURRENT_DATE - ROUND(RAND() * 365)),
-(9, 9, 'ㅁ', 'ㅁ', 9, 2, 4, 1, 5, '장거리 운전', CURRENT_DATE - ROUND(RAND() * 365));
+INSERT INTO Post(writer_id, car_id, title, contents, mgp, safe, space, design, fun, purpose, updated_at,created_at)
+VALUES (1, 1, '좋은거 같아요', '편하다 승차감 좋다', 9, 8, 7, 6, 5, '출퇴근용', CURRENT_DATE - ROUND(RAND(100) * 365),CURRENT_DATE - 1 - ROUND(RAND(100) * 365)),
+(2, 2, '별로더라', '별로던데요', 5, 6, 7, 8, 9, '주말여행', CURRENT_DATE - ROUND(RAND(200) * 365),CURRENT_DATE - 1 - ROUND(RAND(200) * 365)),
+(3, 3, '추천합니다', '드라이브용으로 좋아요', 9, 8, 3, 4, 9, '드라이브', CURRENT_DATE - ROUND(RAND(300) * 365),CURRENT_DATE - 1 - ROUND(RAND(300) * 365)),
+(4, 4, '좁아요', '생각보다 좁아요', 4, 4, 0, 1, 3, '장거리 운전', CURRENT_DATE - ROUND(RAND(400) * 365),CURRENT_DATE - 1 - ROUND(RAND(400) * 365)),
+(5, 5, '연비가 좋아요', '연비 미쳤다', 9, 9, 1, 1, 1, '주말여행', CURRENT_DATE - ROUND(RAND(500) * 365),CURRENT_DATE - 1 - ROUND(RAND(500) * 365)),
+(6, 6, 'ㅁ', 'ㅁ', 8, 1, 8, 1, 8, '주말여행', CURRENT_DATE - ROUND(RAND(600) * 365),CURRENT_DATE - 1 - ROUND(RAND(600) * 365)),
+(7, 7, 'ㅁ', 'ㅁ', 1, 2, 4, 5, 6, '장거리 운전', CURRENT_DATE - ROUND(RAND(700) * 365),CURRENT_DATE - 1 - ROUND(RAND(700) * 365)),
+(8, 8, 'ㅁ', 'ㅁ', 1, 1, 1, 1, 1, '자녀와 함께', CURRENT_DATE - ROUND(RAND(800) * 365),CURRENT_DATE - 1 - ROUND(RAND(800) * 365)),
+(9, 9, 'ㅁ', 'ㅁ', 9, 2, 4, 1, 5, '장거리 운전', CURRENT_DATE - ROUND(RAND(900) * 365),CURRENT_DATE - 1 - ROUND(RAND(900) * 365));
