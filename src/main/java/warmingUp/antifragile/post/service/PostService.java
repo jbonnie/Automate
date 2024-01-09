@@ -15,9 +15,7 @@ import warmingUp.antifragile.post.domain.Post;
 import warmingUp.antifragile.post.dto.*;
 import warmingUp.antifragile.post.repository.PostRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -336,6 +334,7 @@ public class PostService {
                 purposes.add(stk.nextToken());
             }
         }
+        System.out.println("목적 리스트 크기 : " + purposes.size());
         // 선택한 차종 리스트 만들기
         ArrayList<String> types = new ArrayList<>();
         if(type != null) {
@@ -344,7 +343,7 @@ public class PostService {
                 types.add(stk.nextToken());
             }
         }
-
+        System.out.println("차종 리스트 크기 : " + types.size());
         // 1. purpose와 검색어가 모두 선택되었다면
         if(!purposes.isEmpty() && keyword != null) {
             // 선택된 주요 목적, 검색어가 모두 포함된 게시물 리스트 추출
@@ -375,6 +374,7 @@ public class PostService {
         System.out.println("size: " + list.size());
 
         // Post list 순회하며 선택한 모델, 예산 범위에 해당하는 것들로만 추리기
+        ArrayList<Post> result = new ArrayList<>();
         for(Post post : list) {
             Car car = carRepository.findById(post.getCarId()).orElse(null);
             if(car == null) {
@@ -389,35 +389,53 @@ public class PostService {
             String modelName = m.getName();     // 해당 게시물의 차량 모델명
             Integer modelPrice = m.getPrice();      // 해당 게시물의 차량 가격
 
-            // 선택한 모델명에 해당하지 않을 시 리스트에서 삭제
-            if(model != null && !modelName.equals(model)) {
-                list.remove(post);
-                System.out.println("not my model");
+            // 모델 필터링을 적용헀는데 해당 모델이 아닐 경우 패스
+            if(model != null && !modelName.equals(model))
                 continue;
-            }
 
-            // 선택한 예산 범위 내에 해당하지 않을 시 리스트에서 삭제
-            if(!(minPrice <= modelPrice && modelPrice <= maxPrice)) {
-                list.remove(post);
-                System.out.println("not my price");
-                System.out.println("size: " + list.size());
+            // 예산 범위 필터링 적용
+            if(minPrice <= modelPrice && modelPrice <= maxPrice) {
+                result.add(post);
             }
         }
-        System.out.println("good4");
-        return list;
+        System.out.println("result size: " + result.size());
+        return result;
     }
 
     // 선택된 정렬 기준으로 정렬하기 (최신순 / 오래된 순 / 댓글 많은 순)
     // 디폴트: 최신순
     public ArrayList<PostThumbnailDto> sortPostThumbnailList(ArrayList<PostThumbnailDto> list, String sort) {
+        if(list.isEmpty())
+            return list;
         if(sort == null || sort.equals("최신 순")) {
-            list.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
+            Collections.sort(list, new Comparator<PostThumbnailDto>() {
+                @Override
+                public int compare(PostThumbnailDto o1, PostThumbnailDto o2) {
+                    return o2.getUpdatedAt().compareTo(o1.getUpdatedAt());
+                }
+            });
         }
         else if(sort.equals("오래된 순")) {
-            list.sort((o1, o2) -> o1.getUpdatedAt().compareTo(o2.getUpdatedAt()));
+            Collections.sort(list, new Comparator<PostThumbnailDto>() {
+                @Override
+                public int compare(PostThumbnailDto o1, PostThumbnailDto o2) {
+                    return o1.getUpdatedAt().compareTo(o2.getUpdatedAt());
+                }
+            });
         }
         else {      // 댓글 많은 순
-            list.sort((o1, o2) -> o2.getCommentCount().compareTo(o1.getCommentCount()));
+            Collections.sort(list, new Comparator<PostThumbnailDto>() {
+                @Override
+                public int compare(PostThumbnailDto o1, PostThumbnailDto o2) {
+                    if(o1.getCommentCount() > o2.getCommentCount())
+                        return -1;
+                    else if(o1.getCommentCount() < o2.getCommentCount())
+                        return 1;
+                    else {
+                        return o2.getUpdatedAt().compareTo(o1.getUpdatedAt());
+                    }
+                }
+            });
         }
         return list;
     }
