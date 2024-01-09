@@ -5,8 +5,12 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import warmingUp.antifragile.comment.dto.CommentSendDto;
+import warmingUp.antifragile.post.domain.Post;
 import warmingUp.antifragile.post.dto.*;
 import warmingUp.antifragile.post.service.PostService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
@@ -75,6 +79,22 @@ public class PostController {
         return postService.getCommentsByPostId(postId);
     }
 
-//    @GetMapping("/reviews?model=&type=&purpose&minPrice=&maxPrice=&keyword=&sort=")
-//    public ReturnManyDto<PostThumbnailDto> getRefinedReviews(@PathVariable String )
+    // 필터링 기반 게시물 목록 반환 요청 처리 (정렬 : 최신순 / 오래된 순 / 댓글 많은 순)
+    @GetMapping("/reviews?model=&type=&purpose&minPrice=&maxPrice=&keyword=&sort=")
+    public ArrayList<PostThumbnailDto> getRefinedReviews(@RequestParam(value="model",required = false) String model,
+                                                             @RequestParam(value="type",required = false) String type,
+                                                             @RequestParam(value="purpose",required = false) String purpose,
+                                                             @RequestParam(value="minPrice",required = false) Integer minPrice,
+                                                             @RequestParam(value="maxPrice",required = false) Integer maxPrice,
+                                                             @RequestParam(value="keyword",required = false) String keyword,
+                                                             @RequestParam(value="sort",required = false) String sort) {
+        // 필터링 후 Post 객체로 목록 가져오기
+        List<Post> postList = postService.filterPost(model, type, purpose, minPrice, maxPrice, keyword);
+        // 해당 리스트 속 Post 객체를 PostThumnailDto로 변환하기
+        ArrayList<PostThumbnailDto> postThumbnailDtoList;
+        postThumbnailDtoList= postService.postList2ThumnailList(postList);
+        // 리스트 정렬 (최신순 / 오래된 순 / 댓글 많은 순)
+        postThumbnailDtoList = postService.sortPostThumbnailList(postThumbnailDtoList, sort);
+        return postThumbnailDtoList;
+    }
 }
