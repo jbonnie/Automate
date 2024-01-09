@@ -38,6 +38,13 @@ public class PostReadDto {
     private List<CommentSendDto> commentList;
 
     public static PostReadDto fromEntity(Post post, List<CommentSendDto> commentSendDtos, Model model, Member member, Car car){
+
+        int currentDateMonth = LocalDateTime.now().getYear()*12 + LocalDateTime.now().getMonthValue();
+        int startDateMonth = car.getBuyYear()*12 + car.getBuyMonth();
+        int difference = currentDateMonth - startDateMonth;
+        int useYear = difference / 12;
+        int useMonth = difference % 12;
+
         PostReadDto postReadDto = PostReadDto.builder()
                 .modelName(model.getName())
                 .description(model.getDescription())
@@ -45,8 +52,8 @@ public class PostReadDto {
                 .nickname(member.getNickname())
                 .updatedAt(post.getUpdatedAt())
                 .carAge(car.getCarAge())
-                .useYear(LocalDateTime.now().getYear()- car.getBuyYear())
-                .useMonth(LocalDateTime.now().getMonthValue()- car.getBuyMonth())
+                .useYear(useYear)
+                .useMonth(useMonth)
                 .purpose(post.getPurpose())
                 .mgp(post.getMgp())
                 .safe(post.getSafe())

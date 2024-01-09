@@ -34,29 +34,29 @@ public class Model {
     @Column(nullable = false)
     private Integer price;          // 가격
 
-    @ColumnDefault("0L")
+    @Column
     private Long reviewCount;       // 해당 모델의 리뷰 게시물 총 개수
 
-    @ColumnDefault("0L")
+    @Column
     private Long mpgSum;            // 누적 연비 점수
-    @ColumnDefault("0L")
+    @Column
     private Long safeSum;           // 누적 승차감 및 안전 점수
-    @ColumnDefault("0L")
+    @Column
     private Long spaceSum;          // 누적 넓은 공간 점수
-    @ColumnDefault("0L")
+    @Column
     private Long designSum;         // 누적 디자인 점수
-    @ColumnDefault("0L")
+    @Column
     private Long funSum;            // 누적 운전 재미 점수
 
-    @ColumnDefault("0L")
+    @Column
     private Long workCount;         // 누적 출퇴근 목적 개수
-    @ColumnDefault("0L")
+    @Column
     private Long longCount;         // 누적 장거리 운전 목적 개수
-    @ColumnDefault("0L")
+    @Column
     private Long driveCount;        // 누적 드라이브 목적 개수
-    @ColumnDefault("0L")
+    @Column
     private Long travelCount;       // 누적 주말여행 목적 개수
-    @ColumnDefault("0L")
+    @Column
     private Long kidsCount;         // 누적 자녀와 함께 목적 개수
 
     // 해당 모델의 총 키워드 평균 점수 구하기
@@ -122,6 +122,8 @@ public class Model {
     // 해당 주요 이용 목적이 전체 리뷰에서 가지는 퍼센트 비율 반환
     public double purposePercent(String purpose) {
         double percent = 0.0;
+        if(purpose == null)
+            return percent;
         switch(purpose) {
             case "출퇴근용":
                 percent = workCount.doubleValue() / reviewCount * 100;

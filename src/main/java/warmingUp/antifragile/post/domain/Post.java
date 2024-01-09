@@ -23,39 +23,30 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false)
     private Long writerId;
-
     @Column(nullable = false)
     private Long carId;
-
     private String title;
-
     private String contents;
-
     @CreationTimestamp
     private LocalDateTime createdAt;
-
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ColumnDefault("5L")
+    @Column
     private Long mgp;
-    @ColumnDefault("5L")
+    @Column
     private Long safe;
-    @ColumnDefault("5L")
+    @Column
     private Long space;
-    @ColumnDefault("5L")
+    @Column
     private Long design;
-    @ColumnDefault("5L")
+    @Column
     private Long fun;
-
     private String purpose;
 
-    @ColumnDefault("0L")
+    @Column
     private Long commentCount;
-
-
 
 }
