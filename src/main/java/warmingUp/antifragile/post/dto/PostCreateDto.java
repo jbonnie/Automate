@@ -34,6 +34,7 @@ public class PostCreateDto {
                 .design(postCreateDto.getDesign())
                 .fun(postCreateDto.getFun())
                 .purpose(postCreateDto.getPurpose())
+                .commentCount(0L)
                 .build();
         return post;
     }

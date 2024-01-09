@@ -51,7 +51,7 @@ public class PostService {
             Member member = memberRepository.findById(post.getWriterId()).orElse(null);
             if(member == null)
                 continue;
-            Car car = carRepository.findById(member.getCarId()).orElse(null);
+            Car car = carRepository.findById(post.getCarId()).orElse(null);
             if(car == null)
                 continue;
             Model model = modelRepository.findById(car.getModelId()).orElse(null);
@@ -104,31 +104,54 @@ public class PostService {
     }
 
     public ReturnOneDto<PostReadDto> createPost(Long memberId, PostCreateDto postCreateDto){
-        //차 조회 실패
-        Car car = carRepository.findById(memberId).orElse(null);
-        if(car == null)
-            return new ReturnOneDto<>(null, "차를 등록하지 않았습니다");
         //맴버조회 실패
         Member member = memberRepository.findById(memberId).orElse(null);
         if(member == null)
             return new ReturnOneDto<>(null, "등록된 회원이 아닙니다");
-
+        //차 조회 실패
+        Car car = carRepository.findById(member.getCarId()).orElse(null);
+        if(car == null)
+            return new ReturnOneDto<>(null, "차를 등록하지 않았습니다");
         // DB에 저장
         Post post = PostCreateDto.toEntity(member, car, postCreateDto);
         Post saved = postRepository.save(post);
-
-        //Post에 저장할때는 필요 없지만 PostReadDto에는 Model 엔티티 조회가 필요
+        // 게시물에 해당하는 차량 모델에 리뷰글 개수 + 1
+        // 게시물에 해당하는 차량 모델에 고려사항 누적 점수, 목적 누적 개수 반영
         Model model = modelRepository.findById(car.getModelId()).orElse(null);
         if(model == null)
             return new ReturnOneDto<>(null,"저장은 했으나 해당 모델을 찾지 못했음");
+        model.setReviewCount(model.getReviewCount() + 1);
+        model.setMpgSum(model.getMpgSum() + ((postCreateDto.getMgp()==null)?5L:postCreateDto.getMgp()));
+        model.setSafeSum(model.getSafeSum() + ((postCreateDto.getSafe()==null)?5L:postCreateDto.getSafe()));
+        model.setSpaceSum(model.getSpaceSum() + ((postCreateDto.getSpace()==null)?5L:postCreateDto.getSpace()));
+        model.setDesignSum(model.getDesignSum() + ((postCreateDto.getDesign()==null)?5L:postCreateDto.getDesign()));
+        model.setFunSum(model.getFunSum() + ((postCreateDto.getFun()==null)?5L:postCreateDto.getFun()));
 
+        if(postCreateDto.getPurpose() != null) {
+            switch (postCreateDto.getPurpose()) {
+                case "출퇴근용":
+                    model.setWorkCount(model.getWorkCount() + 1);
+                    break;
+                case "장거리 운전":
+                    model.setLongCount(model.getLongCount() + 1);
+                    break;
+                case "드라이브":
+                    model.setDriveCount(model.getDriveCount() + 1);
+                    break;
+                case "주말여행":
+                    model.setTravelCount(model.getTravelCount() + 1);
+                    break;
+                case "자녀와 함께":
+                    model.setKidsCount(model.getKidsCount() + 1);
+                    break;
+            }
+        }
+        Model modelSaved = modelRepository.save(model);
 
         // 댓글은 없을테니 commentSendDtos는 null값으로 대체
         // PostReadDto를 생성 후 컨트롤러에 전달
-        PostReadDto postReadDto = PostReadDto.fromEntity(saved, null, model, member, car);
+        PostReadDto postReadDto = PostReadDto.fromEntity(saved, null, modelSaved, member, car);
         return new ReturnOneDto<>(postReadDto, "리뷰 등록성공");
-
-
     }
 
     public ReturnOneDto<PostReadDto> deletePost(Long memberId,Long postId){
@@ -138,66 +161,128 @@ public class PostService {
 
         if(!post.getWriterId().equals(memberId))
             return new ReturnOneDto<>(null, "작성자 본인만 삭제 할 수 있습니다");
-
-
-        List<Comment> comments = commentRepository.findAllByPostId(postId);
+        // 해당 게시물의 댓글 모두 삭제
         commentRepository.deleteAllByPostId(postId);
-
-        //여기서부터는 없어도 될꺼같은데
-        //삭제된 글을 다시 전달해주는 역할을 함
-        List<CommentSendDto> commentSendDtos = new ArrayList<>();
-        for(Comment comment: comments){
-            Member member = memberRepository.findById(comment.getWriterId()).orElse(null);
-            if(member == null)
-                continue;
-            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
-            commentSendDtos.add(commentSendDto);
-        }
-
-
-        Member member = memberRepository.findById(post.getWriterId()).orElse(null);
-        if(member==null)
-            return new ReturnOneDto<>(null,"삭제는 되었으나 멤버 조회 이상");
-
-        Car car = carRepository.findById(member.getCarId()).orElse(null);
-        if(car ==null)
-            return new ReturnOneDto<>(null,"삭제는 되었으나 차 조회 이상");
+        // 해당 게시물의 차량 가져오기
+        Car car = carRepository.findById(post.getCarId()).orElse(null);
+        if(car == null)
+            return new ReturnOneDto<>(null, "게시물에 차량이 없습니다.");
+        // 해당 게시물의 모델 가져오기
         Model model = modelRepository.findById(car.getModelId()).orElse(null);
-        if(model ==null)
-            return new ReturnOneDto<>(null,"삭제는 되었으나 모델 조회 이상");
+        if(model == null)
+            return new ReturnOneDto<>(null, "게시물에 해당하는 차량 모델이 없습니다.");
+        // 해당 게시물이 매긴 점수 모델 누적합에서 빼주기
+        model.setMpgSum(model.getMpgSum() - ((post.getMgp()==null)?5L:post.getMgp()));
+        model.setSafeSum(model.getSafeSum() - ((post.getSafe()==null)?5L:post.getSafe()));
+        model.setSpaceSum(model.getSpaceSum() - ((post.getSpace()==null)?5L:post.getSpace()));
+        model.setDesignSum(model.getDesignSum() - ((post.getDesign()==null)?5L:post.getDesign()));
+        model.setFunSum(model.getFunSum() - ((post.getFun()==null)?5L:post.getFun()));
+        if(post.getPurpose() != null) {
+            switch (post.getPurpose()) {
+                case "출퇴근용":
+                    model.setWorkCount(model.getWorkCount() - 1);
+                    break;
+                case "장거리 운전":
+                    model.setLongCount(model.getLongCount() - 1);
+                    break;
+                case "드라이브":
+                    model.setDriveCount(model.getDriveCount() - 1);
+                    break;
+                case "주말여행":
+                    model.setTravelCount(model.getTravelCount() - 1);
+                    break;
+                case "자녀와 함께":
+                    model.setKidsCount(model.getKidsCount() - 1);
+                    break;
+            }
+        }
+        // 해당 모델의 리뷰 게시물 개수 - 1
+        model.setReviewCount(model.getReviewCount() - 1);
+        modelRepository.save(model);
+        // 해당 게시물 삭제
+        postRepository.delete(post);
 
-        PostReadDto postReadDto = PostReadDto.fromEntity(post, commentSendDtos, model, member, car);
-        return new ReturnOneDto<>(postReadDto, "리뷰 삭제 성공");
-
+        return new ReturnOneDto<>(null, "리뷰 삭제 성공");
     }
 
     public ReturnOneDto<PostReadDto> modifyPost(Long memberId, Long postId, PostCreateDto postCreateDto){
 
+        // 해당하는 기존의 Post 객체 불러오기
         Post post = postRepository.findById(postId).orElse(null);
         if(post == null)
-            return new ReturnOneDto<>(null,"리뷰를 찾을 수 없습니다");
-
-        if(!post.getWriterId().equals(memberId))
-            return new ReturnOneDto<>(null, "작성자 본인만 수정 할 수 있습니다");
-
-        //조건 확인
-        Car car = carRepository.findById(memberId).orElse(null);
-        if(car == null)
-            return new ReturnOneDto<>(null, "차를 등록하지 않았습니다");
-        //맴버조회 실패
+            return new ReturnOneDto<>(null, "리뷰를 찾을 수 없습니다.");
+        // 글 작성자의 접근인지 확인
+        if(!memberId.equals(post.getWriterId()))
+            return new ReturnOneDto<>(null, "작성자만 수정 가능해요.");
+        // 유저 객체 가져오기
         Member member = memberRepository.findById(memberId).orElse(null);
         if(member == null)
-            return new ReturnOneDto<>(null, "등록된 회원이 아닙니다");
+            return new ReturnOneDto<>(null, "당신은 유령인가요?");
 
-        // DB에서 수정
-        Post modifiedPost = PostCreateDto.toEntity(member, car, postCreateDto);
-        modifiedPost.setId(postId);
-        postRepository.save(modifiedPost);
-
-        // PostReadDto에는 Model 엔티티 조회가 필요
+        // 수정 전 모델에 해당하는 평가들 초기화
+        Car car = carRepository.findById(post.getCarId()).orElse(null);
+        if(car == null)
+            return new ReturnOneDto<>(null, "리뷰에 해당하는 차량이 없었네요.");
         Model model = modelRepository.findById(car.getModelId()).orElse(null);
         if(model == null)
-            return new ReturnOneDto<>(null,"수정은 했으나 해당 모델을 찾지 못했음");
+            return new ReturnOneDto<>(null, "리뷰에 해당하는 모델이 없어요.");
+
+        model.setMpgSum(model.getMpgSum() - ((post.getMgp()==null)?5L:post.getMgp()));
+        model.setSafeSum(model.getSafeSum() - ((post.getSafe()==null)?5L:post.getSafe()));
+        model.setSpaceSum(model.getSpaceSum() - ((post.getSpace()==null)?5L:post.getSpace()));
+        model.setDesignSum(model.getDesignSum() - ((post.getDesign()==null)?5L:post.getDesign()));
+        model.setFunSum(model.getFunSum() - ((post.getFun()==null)?5L:post.getFun()));
+        if(post.getPurpose() != null) {
+            switch (post.getPurpose()) {
+                case "출퇴근용":
+                    model.setWorkCount(model.getWorkCount() - 1);
+                    break;
+                case "장거리 운전":
+                    model.setLongCount(model.getLongCount() - 1);
+                    break;
+                case "드라이브":
+                    model.setDriveCount(model.getDriveCount() - 1);
+                    break;
+                case "주말여행":
+                    model.setTravelCount(model.getTravelCount() - 1);
+                    break;
+                case "자녀와 함께":
+                    model.setKidsCount(model.getKidsCount() - 1);
+                    break;
+            }
+        }
+
+        // 모델 점수 수정사항 반영
+        model.setMpgSum(model.getMpgSum() + ((postCreateDto.getMgp()==null)?5L:postCreateDto.getMgp()));
+        model.setSafeSum(model.getSafeSum() + ((postCreateDto.getSafe()==null)?5L:postCreateDto.getSafe()));
+        model.setSpaceSum(model.getSpaceSum() + ((postCreateDto.getSpace()==null)?5L:postCreateDto.getSpace()));
+        model.setDesignSum(model.getDesignSum() + ((postCreateDto.getDesign()==null)?5L:postCreateDto.getDesign()));
+        model.setFunSum(model.getFunSum() + ((postCreateDto.getFun()==null)?5L:postCreateDto.getFun()));
+        if(post.getPurpose() != null) {
+            switch (post.getPurpose()) {
+                case "출퇴근용":
+                    model.setWorkCount(model.getWorkCount() + 1);
+                    break;
+                case "장거리 운전":
+                    model.setLongCount(model.getLongCount() + 1);
+                    break;
+                case "드라이브":
+                    model.setDriveCount(model.getDriveCount() + 1);
+                    break;
+                case "주말여행":
+                    model.setTravelCount(model.getTravelCount() + 1);
+                    break;
+                case "자녀와 함께":
+                    model.setKidsCount(model.getKidsCount() + 1);
+                    break;
+            }
+        }
+        Model modelSaved = modelRepository.save(model);
+
+        // post 객체 수정사항 반영
+        Post modifiedPost = PostCreateDto.toEntity(member, car, postCreateDto);
+        modifiedPost.setId(postId);
+        Post postSaved = postRepository.save(modifiedPost);
 
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         List<CommentSendDto> commentSendDtos = new ArrayList<>();
@@ -205,11 +290,11 @@ public class PostService {
             Member commentMember = memberRepository.findById(comment.getWriterId()).orElse(null);
             if(commentMember == null)
                 continue;
-            CommentSendDto commentSendDto = CommentSendDto.fromEntities(modifiedPost, comment, commentMember);
+            CommentSendDto commentSendDto = CommentSendDto.fromEntities(postSaved, comment, commentMember);
             commentSendDtos.add(commentSendDto);
         }
-
-        PostReadDto postReadDto = PostReadDto.fromEntity(modifiedPost, commentSendDtos, model, member, car);
+        // 수정된 postReadDto 보내기
+        PostReadDto postReadDto = PostReadDto.fromEntity(postSaved, commentSendDtos, modelSaved, member, car);
         return new ReturnOneDto<>(postReadDto, "리뷰 수정 성공");
     }
 

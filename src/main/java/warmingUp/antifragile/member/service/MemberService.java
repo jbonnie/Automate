@@ -118,6 +118,7 @@ public class MemberService {
         Model model = modelRepository.findByName(carDto.getModelName()).orElse(null);
         if(model == null)
             return null;
+
         // 제공받은 정보를 바탕으로 새로운 Car 객체 생성
         Car car = new Car(null, carDto.getCarNum(), model.getId(),
                 carDto.getCarAge(), carDto.getBuyYear(), carDto.getBuyMonth());
