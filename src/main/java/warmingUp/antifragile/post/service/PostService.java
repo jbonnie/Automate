@@ -40,7 +40,6 @@ public class PostService {
         ArrayList<PostThumbnailDto> list = postList2ThumnailList(posts);
         // 리스트 최신순 정렬
         list.sort((o1, o2) -> o2.getUpdatedAt().compareTo(o1.getUpdatedAt()));
-        System.out.println("okay3");
         return new ReturnManyDto<>(list,"조회성공" );
     }
     
@@ -90,16 +89,15 @@ public class PostService {
             return new ReturnOneDto<>(null,"맴버를 찾지 못했음");
 
         // 댓글 엔티티에서 postId로 필터링, 필터링 후 for문으로 Dto로 변환
-        List<Comment> comments = commentRepository.findAllByPostId(postId);
-        List<CommentSendDto> commentSendDtos = new ArrayList<>();
-        for(Comment comment: comments){
-            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
-            commentSendDtos.add(commentSendDto);
-        }
+//        List<Comment> comments = commentRepository.findAllByPostId(postId);
+//        List<CommentSendDto> commentSendDtos = new ArrayList<>();
+//        for(Comment comment: comments){
+//            CommentSendDto commentSendDto = CommentSendDto.fromEntities(post, comment, member);
+//            commentSendDtos.add(commentSendDto);
+//        }
 
-        // 리뷰 Dto에 각종 정보와 댓글List를 주입 시킨 후 리턴
-        PostReadDto postReadDto = PostReadDto.fromEntity(post, commentSendDtos, model, member, car);
-
+        // 리뷰 Dto에 각종 정보와 댓글List를 주입 시킨 후 리턴 -> 현재는 댓글 구현하지 않으므로 null 주입
+        PostReadDto postReadDto = PostReadDto.fromEntity(post, null, model, member, car);
         return new ReturnOneDto<>(postReadDto, "리뷰 불러오기 성공");
 
     }
@@ -348,13 +346,13 @@ public class PostService {
         }
 
         // 1. purpose와 검색어가 모두 선택되었다면
-        if(purposes.size() > 0 && keyword != null) {
+        if(!purposes.isEmpty() && keyword != null) {
             // 선택된 주요 목적, 검색어가 모두 포함된 게시물 리스트 추출
             list = postRepository.findByPurposeInAndContentsContaining(purposes, keyword);
         }
 
         // 2. purpose만 선택되었을 경우
-        else if(purposes.size() > 0 ) {
+        else if(!purposes.isEmpty()) {
             // 선택된 주요 목적이 포함된 게시물 리스트 추출
             list = postRepository.findByPurposeIn(purposes);
         }
@@ -368,6 +366,13 @@ public class PostService {
             // 모든 게시물 리스트 추출
             list = postRepository.findAll();
         }
+
+        if(minPrice == null)
+            minPrice = 0;
+        if(maxPrice == null)
+            maxPrice = Integer.MAX_VALUE;
+
+        System.out.println("size: " + list.size());
 
         // Post list 순회하며 선택한 모델, 예산 범위에 해당하는 것들로만 추리기
         for(Post post : list) {
@@ -387,22 +392,18 @@ public class PostService {
             // 선택한 모델명에 해당하지 않을 시 리스트에서 삭제
             if(model != null && !modelName.equals(model)) {
                 list.remove(post);
+                System.out.println("not my model");
                 continue;
             }
-            // 예산 범위를 선택하지 않았을 경우 패스
-            if(minPrice == null && maxPrice == null)
-                continue;
-            // 최대 예산만 선택했을 경우
-            if(minPrice == null)
-                minPrice = 0;
-            // 최소 예산만 선택했을 경우
-            if(maxPrice == null)
-                maxPrice = Integer.MAX_VALUE;
+
             // 선택한 예산 범위 내에 해당하지 않을 시 리스트에서 삭제
             if(!(minPrice <= modelPrice && modelPrice <= maxPrice)) {
                 list.remove(post);
+                System.out.println("not my price");
+                System.out.println("size: " + list.size());
             }
         }
+        System.out.println("good4");
         return list;
     }
 

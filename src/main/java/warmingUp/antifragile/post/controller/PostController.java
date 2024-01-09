@@ -80,7 +80,7 @@ public class PostController {
     }
 
     // 필터링 기반 게시물 목록 반환 요청 처리 (정렬 : 최신순 / 오래된 순 / 댓글 많은 순)
-    @GetMapping("/reviews?model=&type=&purpose&minPrice=&maxPrice=&keyword=&sort=")
+    @GetMapping("/reviews/filter")
     public ArrayList<PostThumbnailDto> getRefinedReviews(@RequestParam(value="model",required = false) String model,
                                                              @RequestParam(value="type",required = false) String type,
                                                              @RequestParam(value="purpose",required = false) String purpose,
