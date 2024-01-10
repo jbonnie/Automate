@@ -388,10 +388,24 @@ public class PostService {
             }
             String modelName = m.getName();     // 해당 게시물의 차량 모델명
             Integer modelPrice = m.getPrice();      // 해당 게시물의 차량 가격
+            String modelType = m.getType();         // 해당 게시물의 차종
 
             // 모델 필터링을 적용헀는데 해당 모델이 아닐 경우 패스
             if(model != null && !modelName.equals(model))
                 continue;
+
+            // 차종 필터링을 적용했는데 해당 차종이 아닐 경우 패스
+            if(!types.isEmpty()) {
+                boolean done = false;
+                for(String t : types) {
+                    if(t.equals(modelType)) {
+                        done = true;
+                        break;
+                    }
+                }
+                if(!done)
+                    continue;
+            }
 
             // 예산 범위 필터링 적용
             if(minPrice <= modelPrice && modelPrice <= maxPrice) {
