@@ -368,6 +368,10 @@ public class PostService {
 
         if(minPrice == null)
             minPrice = 0;
+
+
+
+
         if(maxPrice == null)
             maxPrice = Integer.MAX_VALUE;
 
