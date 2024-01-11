@@ -1,6 +1,6 @@
 # 현대 소프티어 3기
 ## # softee5 워밍업 프로젝트
-## # 팀 antifragile
+## # 팀 antifragile의 BE repository
 ----------------------------------------
 
 ### # 팀원
